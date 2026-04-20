@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pokémon Tracker">
+<meta name="theme-color" content="#dc2626">
+<title>⚡ Poké Trader ⚡</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23ef4444' stroke='%23000' stroke-width='4'/%3E%3Cpath d='M 5 50 L 95 50' stroke='%23000' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23fff' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #fef9c3 0%, #fee2e2 50%, #dbeafe 100%); min-height: 100vh; color: #1f2937; }
+  body {
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,203,5,0.15) 0, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(59,130,246,0.15) 0, transparent 50%),
+      radial-gradient(circle at 50% 90%, rgba(239,68,68,0.12) 0, transparent 50%),
+      linear-gradient(135deg, #fef9c3 0%, #fee2e2 50%, #dbeafe 100%);
+  }
+  .container { max-width: 720px; margin: 0 auto; padding: 16px; padding-bottom: 40px; position: relative; }
+
+  /* Pokéball decorations */
+  .pokeball { width: 32px; height: 32px; border-radius: 50%; position: relative; display: inline-block; border: 3px solid #1f2937; overflow: hidden; flex-shrink: 0; background: #fff; }
+  .pokeball::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: #ef4444; }
+  .pokeball::after { content: ''; position: absolute; top: 50%; left: 10%; right: 10%; height: 30%; background: #fff; border: 2px solid #1f2937; border-radius: 50%; transform: translateY(-50%); }
+  .pokeball-sm { width: 20px; height: 20px; border-width: 2px; }
+  .pokeball-sm::after { border-width: 1.5px; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 20px; position: relative; padding: 12px 0; }
+  .header-decor { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
+  .header h1 { font-size: 30px; font-weight: 900; background: linear-gradient(90deg, #dc2626, #eab308, #2563eb); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; letter-spacing: -0.5px; text-shadow: 2px 2px 0 rgba(0,0,0,0.05); }
+  .header p { color: #6b7280; font-weight: 600; font-size: 13px; margin-top: 4px; font-style: italic; }
+  .header p::before { content: '⚡ '; }
+  .header p::after { content: ' ⚡'; }
+
+  /* Money Bank - Pokeball styled */
+  .bank { background: linear-gradient(180deg, #ef4444 0%, #ef4444 48%, #1f2937 48%, #1f2937 52%, #ffffff 52%, #ffffff 100%); border-radius: 24px; padding: 0; margin-bottom: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 3px solid #1f2937; overflow: hidden; }
+  .bank-top-section { padding: 16px 20px 20px; color: white; position: relative; }
+  .bank-top-section::after { content: ''; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); width: 44px; height: 44px; background: white; border: 4px solid #1f2937; border-radius: 50%; z-index: 2; }
+  .bank-top-section::before { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; background: white; border: 3px solid #1f2937; border-radius: 50%; z-index: 3; }
+  .bank-bottom-section { padding: 28px 16px 16px; background: white; }
+  .bank-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .bank-label { font-size: 12px; opacity: 0.95; font-weight: 800; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .bank-amount { font-size: 44px; font-weight: 900; line-height: 1; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); font-family: 'Courier New', monospace; }
+  .bank-sub { font-size: 11px; opacity: 0.9; margin-top: 4px; font-weight: 500; }
+  .bank-btn { background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5); color: white; font-size: 11px; font-weight: 700; padding: 8px 10px; border-radius: 8px; cursor: pointer; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px; }
+  .bank-btn:hover { background: rgba(255,255,255,0.35); }
+  .bank-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .bank-cell { background: #f3f4f6; border: 2px solid #1f2937; border-radius: 10px; padding: 8px; font-size: 11px; text-align: center; }
+  .bank-cell-label { color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px; }
+  .bank-cell-val { font-weight: 800; font-size: 15px; margin-top: 2px; color: #1f2937; font-family: 'Courier New', monospace; }
+  .bank-total { margin-top: 10px; padding: 8px 10px; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 8px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #78350f; border: 2px solid #78350f; }
+
+  /* Stats - Gym Badge style */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  @media (min-width: 640px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { border-radius: 16px; padding: 14px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 3px solid #1f2937; position: relative; overflow: hidden; }
+  .stat::before { content: ''; position: absolute; top: -20px; right: -20px; width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 50%; }
+  .stat-profit { background: linear-gradient(135deg, #22c55e, #15803d); }
+  .stat-save { background: linear-gradient(135deg, #ec4899, #9d174d); }
+  .stat-fun { background: linear-gradient(135deg, #a855f7, #6b21a8); }
+  .stat-reinvest { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+  .stat-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; position: relative; z-index: 1; }
+  .stat-val { font-size: 24px; font-weight: 900; font-family: 'Courier New', monospace; text-shadow: 2px 2px 0 rgba(0,0,0,0.15); position: relative; z-index: 1; }
+
+  /* Secondary stats */
+  .mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .mini-stat { background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border: 2px solid #1f2937; }
+  .mini-stat-label { font-size: 10px; color: #6b7280; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .mini-stat-val { font-size: 16px; font-weight: 800; color: #1f2937; margin-top: 2px; font-family: 'Courier New', monospace; }
+
+  /* Buttons */
+  .btn-add { width: 100%; background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; font-weight: 800; padding: 16px; border-radius: 16px; border: 3px solid #1f2937; box-shadow: 0 6px 0 #1f2937, 0 8px 12px rgba(0,0,0,0.2); font-size: 16px; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.1s; }
+  .btn-add:active { transform: translateY(3px); box-shadow: 0 3px 0 #1f2937, 0 4px 8px rgba(0,0,0,0.2); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; background: white; color: #6b7280; border: 3px solid #1f2937; cursor: pointer; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tab.active { background: #2563eb; color: white; box-shadow: 0 4px 0 #1e3a8a; transform: translateY(-2px); }
+
+  /* Cards - styled like Pokemon cards */
+  .card-list { display: flex; flex-direction: column; gap: 10px; }
+  .card { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.1); border: 3px solid; position: relative; }
+  .card.inventory { border-color: #eab308; background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); }
+  .card.inventory::before { content: '✨'; position: absolute; top: -8px; left: 12px; font-size: 20px; }
+  .card.profit { border-color: #16a34a; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+  .card.profit::before { content: '⚡'; position: absolute; top: -10px; left: 12px; font-size: 22px; }
+  .card.loss { border-color: #dc2626; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); }
+  .card.loss::before { content: '💔'; position: absolute; top: -10px; left: 12px; font-size: 20px; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .card-name { font-weight: 800; font-size: 16px; color: #1f2937; padding-left: 28px; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; color: #6b7280; margin-top: 4px; font-weight: 500; }
+  .card-meta span { display: inline-flex; align-items: center; gap: 3px; }
+  .card-meta .paid { color: #dc2626; font-weight: 700; }
+  .trash-btn { background: none; border: none; color: #9ca3af; cursor: pointer; padding: 4px; font-size: 18px; }
+  .trash-btn:hover { color: #ef4444; }
+  .btn-sell { width: 100%; margin-top: 8px; background: linear-gradient(135deg, #22c55e, #15803d); color: white; font-weight: 800; padding: 10px; border-radius: 10px; border: 2px solid #1f2937; box-shadow: 0 3px 0 #1f2937; cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.1s; }
+  .btn-sell:active { transform: translateY(2px); box-shadow: 0 1px 0 #1f2937; }
+
+  /* Sold card breakdown */
+  .sale-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; font-size: 13px; }
+  .sale-cell { background: #f9fafb; border-radius: 8px; padding: 8px; text-align: center; }
+  .sale-cell-label { font-size: 11px; color: #6b7280; }
+  .sale-cell-val { font-weight: 700; color: #374151; }
+  .sale-cell.profit-pos { background: #dcfce7; }
+  .sale-cell.profit-pos .sale-cell-val { color: #15803d; }
+  .sale-cell.profit-neg { background: #fee2e2; }
+  .sale-cell.profit-neg .sale-cell-val { color: #b91c1c; }
+
+  .split-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 11px; }
+  .split-cell { border-radius: 8px; padding: 6px; text-align: center; border: 1px solid; }
+  .split-save { background: #fdf2f8; border-color: #fbcfe8; color: #9d174d; }
+  .split-fun { background: #faf5ff; border-color: #e9d5ff; color: #6b21a8; }
+  .split-reinvest { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+  .split-cell-val { font-weight: 700; margin-top: 2px; }
+
+  /* Empty states */
+  .empty { background: white; border-radius: 16px; padding: 32px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .empty-icon { font-size: 48px; margin-bottom: 8px; }
+  .empty-text { color: #6b7280; font-weight: 500; }
+
+  /* Reset button */
+  .reset { width: 100%; margin-top: 32px; background: none; border: none; color: #9ca3af; font-size: 13px; cursor: pointer; padding: 8px; }
+  .reset:hover { color: #ef4444; }
+
+  /* Modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .modal { background: white; border-radius: 20px; padding: 20px; max-width: 420px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+  .modal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .modal-title { font-size: 22px; font-weight: 700; color: #1f2937; }
+  .modal-close { background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; }
+  .modal-note { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+  .form-row { margin-bottom: 12px; }
+  .form-row label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 4px; }
+  .form-row input { width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; outline: none; font-family: inherit; }
+  .form-row input:focus { border-color: #dc2626; }
+  .sell-form input:focus { border-color: #16a34a; }
+  .cash-form input:focus { border-color: #6366f1; }
+  .btn-submit { width: 100%; color: white; font-weight: 700; padding: 12px; border-radius: 10px; border: none; font-size: 15px; cursor: pointer; margin-top: 4px; }
+  .btn-buy { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .btn-sell-submit { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .btn-cash { background: linear-gradient(90deg, #6366f1, #9333ea); }
+
+  .selling-info { background: #fef9c3; border: 2px solid #fde047; border-radius: 10px; padding: 10px; margin-bottom: 12px; }
+  .selling-info-label { font-size: 12px; color: #6b7280; }
+  .selling-info-name { font-weight: 700; color: #1f2937; }
+
+  .preview { border-radius: 10px; padding: 10px; margin-top: 8px; border: 2px solid; }
+  .preview-profit { background: #f0fdf4; border-color: #86efac; }
+  .preview-loss { background: #fef2f2; border-color: #fca5a5; }
+  .preview-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .preview-amount { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .preview-amount.pos { color: #15803d; }
+  .preview-amount.neg { color: #b91c1c; }
+  .preview-splits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; font-size: 11px; }
+
+  /* Buyer autocomplete */
+  .buyer-wrap { position: relative; }
+  .suggestions { position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-height: 160px; overflow-y: auto; z-index: 10; }
+  .suggestion { width: 100%; text-align: left; padding: 10px 14px; background: none; border: none; border-bottom: 1px solid #f3f4f6; cursor: pointer; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 6px; font-family: inherit; }
+  .suggestion:hover { background: #f0fdf4; }
+  .suggestion:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+  // ============ STORAGE ============
+  const STORAGE_KEY = 'pokemon_tracker_data_v1';
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { console.log('Load failed'); }
+    return { cards: [], startingCash: 0 };
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ cards: state.cards, startingCash: state.startingCash }));
+    } catch (e) { alert('Could not save data. Your browser may have storage disabled.'); }
+  }
+
+  // ============ STATE ============
+  let state = {
+    ...loadData(),
+    activeTab: 'inventory',
+    showBuyForm: false,
+    sellingCardId: null,
+    editingCash: false,
+    showSuggestions: false,
+    sellBuyerInput: '',
+    sellAmountInput: '',
+  };
+
+  // ============ HELPERS ============
+  const fmt = (n) => `$${(Math.round(n * 100) / 100).toFixed(2)}`;
+  const today = () => new Date().toISOString().split('T')[0];
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ============ ACTIONS ============
+  function addCard() {
+    const name = document.getElementById('buyName').value.trim();
+    const date = document.getElementById('buyDate').value;
+    const amount = parseFloat(document.getElementById('buyAmount').value);
+    if (!name || !amount || amount <= 0) { alert('Please enter a name and amount.'); return; }
+    state.cards.push({
+      id: Date.now().toString(),
+      name: name,
+      buyDate: date || today(),
+      buyAmount: amount,
+      sold: false,
+    });
+    saveData();
+    state.showBuyForm = false;
+    render();
+  }
+
+  function sellCard() {
+    const date = document.getElementById('sellDate').value;
+    const buyer = document.getElementById('sellBuyer').value.trim();
+    const amount = parseFloat(document.getElementById('sellAmount').value);
+    if (!buyer || isNaN(amount)) { alert('Please enter buyer and amount.'); return; }
+    const card = state.cards.find(c => c.id === state.sellingCardId);
+    if (!card) return;
+    const profit = amount - card.buyAmount;
+    card.sold = true;
+    card.sellDate = date || today();
+    card.sellAmount = amount;
+    card.buyer = buyer;
+    card.profit = profit;
+    card.savings = profit > 0 ? profit * 0.2 : 0;
+    card.fun = profit > 0 ? profit * 0.2 : 0;
+    // Reinvest = everything returned from sale EXCEPT the savings tax
+    // Includes original buy cost returned + fun money + remaining profit
+    card.reinvest = profit > 0 ? amount - card.savings : amount;
+    saveData();
+    state.sellingCardId = null;
+    state.sellBuyerInput = '';
+    state.sellAmountInput = '';
+    state.showSuggestions = false;
+    render();
+  }
+
+  function deleteCard(id) {
+    if (!confirm('Delete this entry?')) return;
+    state.cards = state.cards.filter(c => c.id !== id);
+    saveData();
+    render();
+  }
+
+  function saveCash() {
+    const val = parseFloat(document.getElementById('cashInput').value);
+    state.startingCash = isNaN(val) ? 0 : val;
+    saveData();
+    state.editingCash = false;
+    render();
+  }
+
+  function resetAll() {
+    if (!confirm('Delete ALL cards and reset everything? This cannot be undone.')) return;
+    state.cards = [];
+    state.startingCash = 0;
+    saveData();
+    render();
+  }
+
+  function openBuy() { state.showBuyForm = true; render(); }
+  function closeBuy() { state.showBuyForm = false; render(); }
+  function openSell(id) { state.sellingCardId = id; state.sellBuyerInput = ''; state.sellAmountInput = ''; render(); }
+  function closeSell() { state.sellingCardId = null; state.showSuggestions = false; render(); }
+  function openCash() { state.editingCash = true; render(); }
+  function closeCash() { state.editingCash = false; render(); }
+  function setTab(t) { state.activeTab = t; render(); }
+
+  function onBuyerInput(val) {
+    state.sellBuyerInput = val;
+    state.showSuggestions = true;
+    renderSuggestions();
+  }
+
+  function onSellAmountInput(val) {
+    state.sellAmountInput = val;
+    updateSellPreview();
+  }
+
+  function pickBuyer(name) {
+    state.sellBuyerInput = name;
+    state.showSuggestions = false;
+    const input = document.getElementById('sellBuyer');
+    if (input) input.value = name;
+    renderSuggestions();
+  }
+
+  function hideSuggestions() {
+    setTimeout(() => { state.showSuggestions = false; renderSuggestions(); }, 200);
+  }
+
+  function focusBuyer() {
+    state.showSuggestions = true;
+    renderSuggestions();
+  }
+
+  // ============ COMPUTED ============
+  function compute() {
+    const sold = state.cards.filter(c => c.sold);
+    const unsold = state.cards.filter(c => !c.sold);
+    const totalProfit = sold.reduce((s, c) => s + (c.profit || 0), 0);
+    const totalSavings = sold.reduce((s, c) => s + (c.savings || 0), 0);
+    const totalFun = sold.reduce((s, c) => s + (c.fun || 0), 0);
+    const totalReinvest = sold.reduce((s, c) => s + (c.reinvest || 0), 0);
+    const totalSpent = state.cards.reduce((s, c) => s + c.buyAmount, 0);
+    const inventoryValue = unsold.reduce((s, c) => s + c.buyAmount, 0);
+    // My Money = starting cash + all profits kept (profit minus savings) - money currently tied up in unsold cards
+    const profitKept = totalProfit - totalSavings;
+    const spendableCash = state.startingCash + profitKept - inventoryValue;
+    const totalWorth = state.startingCash + profitKept;
+
+    // Past buyers (most recent first, unique)
+    const seen = new Set();
+    const pastBuyers = [];
+    sold.slice().sort((a, b) => (b.sellDate || '').localeCompare(a.sellDate || '')).forEach(c => {
+      if (c.buyer && !seen.has(c.buyer.toLowerCase())) {
+        seen.add(c.buyer.toLowerCase());
+        pastBuyers.push(c.buyer);
+      }
+    });
+
+    return { sold, unsold, totalProfit, totalSavings, totalFun, totalReinvest, totalSpent, inventoryValue, spendableCash, totalWorth, pastBuyers };
+  }
+
+  // ============ RENDER HELPERS ============
+  function renderInventoryCard(card) {
+    return `
+      <div class="card inventory">
+        <div class="card-top">
+          <div style="flex:1">
+            <div class="card-name">${esc(card.name)}</div>
+            <div class="card-meta">
+              <span>📅 ${esc(card.buyDate)}</span>
+              <span class="paid">💵 Paid ${fmt(card.buyAmount)}</span>
+            </div>
+          </div>
+          <button class="trash-btn" onclick="deleteCard('${card.id}')">🗑️</button>
+        </div>
+        <button class="btn-sell" onclick="openSell('${card.id}')">💰 Trade This Card</button>
+      </div>
+    `;
+  }
+
+  function renderSoldCard(card) {
+    const profitClass = card.profit >= 0 ? 'profit' : 'loss';
+    const profitCellClass = card.profit >= 0 ? 'profit-pos' : 'profit-neg';
+    const profitSign = card.profit >= 0 ? '+' : '';
+    const splits = card.profit > 0 ? `
+      <div class="split-grid">
+        <div class="split-cell split-save"><div>🏦 Bank</div><div class="split-cell-val">${fmt(card.savings)}</div></div>
+        <div class="split-cell split-fun"><div>🎮 Fun</div><div class="split-cell-val">${fmt(card.fun)}</div></div>
+        <div class="split-cell split-reinvest"><div>🔄 Power Up</div><div class="split-cell-val">${fmt(card.reinvest)}</div></div>
+      </div>
+    ` : '';
+    return `
+      <div class="card ${profitClass}">
+        <div class="card-top">
+          <div style="flex:1">
+            <div class="card-name">${esc(card.name)}</div>
+            <div class="card-meta">
+              <span>📅 Traded ${esc(card.sellDate)}</span>
+              <span>🤝 ${esc(card.buyer)}</span>
+            </div>
+          </div>
+          <button class="trash-btn" onclick="deleteCard('${card.id}')">🗑️</button>
+        </div>
+        <div class="sale-grid">
+          <div class="sale-cell"><div class="sale-cell-label">Caught For</div><div class="sale-cell-val">${fmt(card.buyAmount)}</div></div>
+          <div class="sale-cell"><div class="sale-cell-label">Traded For</div><div class="sale-cell-val">${fmt(card.sellAmount)}</div></div>
+          <div class="sale-cell ${profitCellClass}"><div class="sale-cell-label">EXP Gained</div><div class="sale-cell-val">${profitSign}${fmt(card.profit)}</div></div>
+        </div>
+        ${splits}
+      </div>
+    `;
+  }
+
+  function renderSuggestions() {
+    const box = document.getElementById('suggestionsBox');
+    if (!box) return;
+    const { pastBuyers } = compute();
+    const q = (state.sellBuyerInput || '').toLowerCase();
+    const filtered = q
+      ? pastBuyers.filter(b => b.toLowerCase().includes(q) && b.toLowerCase() !== q)
+      : pastBuyers;
+    if (!state.showSuggestions || filtered.length === 0) {
+      box.innerHTML = '';
+      return;
+    }
+    box.innerHTML = `<div class="suggestions">${filtered.slice(0, 6).map(b => `<button type="button" class="suggestion" onmousedown="event.preventDefault(); pickBuyer('${esc(b).replace(/'/g,"\\'")}')">👤 ${esc(b)}</button>`).join('')}</div>`;
+  }
+
+  function updateSellPreview() {
+    const box = document.getElementById('sellPreview');
+    if (!box) return;
+    const card = state.cards.find(c => c.id === state.sellingCardId);
+    const amount = parseFloat(state.sellAmountInput);
+    if (!card || isNaN(amount)) { box.innerHTML = ''; return; }
+    const profit = amount - card.buyAmount;
+    const cls = profit >= 0 ? 'preview-profit' : 'preview-loss';
+    const amtCls = profit >= 0 ? 'pos' : 'neg';
+    const sign = profit >= 0 ? '+' : '';
+    const splits = profit > 0 ? `
+      <div class="preview-splits">
+        <div>🏦 Bank: <b>${fmt(profit*0.2)}</b></div>
+        <div>🎮 Fun: <b>${fmt(profit*0.2)}</b></div>
+        <div>🔄 Power Up: <b>${fmt(amount - profit*0.2)}</b></div>
+      </div>
+    ` : '';
+    box.innerHTML = `
+      <div class="preview ${cls}">
+        <div class="preview-label">⚡ EXP Breakdown:</div>
+        <div class="preview-amount ${amtCls}">${sign}${fmt(profit)} EXP</div>
+        ${splits}
+      </div>
+    `;
+  }
+
+  // ============ MAIN RENDER ============
+  function render() {
+    const c = compute();
+
+    let listHtml = '';
+    if (state.activeTab === 'inventory') {
+      if (c.unsold.length === 0) {
+        listHtml = `<div class="empty"><div class="empty-icon">🎒</div><div class="empty-text"><b>Your collection is empty!</b><br>Catch your first card to get started.</div></div>`;
+      } else {
+        listHtml = c.unsold.map(renderInventoryCard).join('');
+      }
+    } else {
+      if (c.sold.length === 0) {
+        listHtml = `<div class="empty"><div class="empty-icon">🤝</div><div class="empty-text"><b>No trades yet!</b><br>Trade a card from your collection to see it here.</div></div>`;
+      } else {
+        listHtml = c.sold.slice().reverse().map(renderSoldCard).join('');
+      }
+    }
+
+    let modalHtml = '';
+    if (state.showBuyForm) {
+      modalHtml = `
+        <div class="modal-bg" onclick="if(event.target===this) closeBuy()">
+          <div class="modal">
+            <div class="modal-top">
+              <div class="modal-title">🎯 Catch New Card</div>
+              <button class="modal-close" onclick="closeBuy()">✕</button>
+            </div>
+            <div class="form-row"><label>Card / Product Name</label><input type="text" id="buyName" placeholder="e.g. Charizard, Booster Box" autofocus></div>
+            <div class="form-row"><label>Date Caught</label><input type="date" id="buyDate" value="${today()}"></div>
+            <div class="form-row"><label>Amount Paid ($)</label><input type="number" step="0.01" inputmode="decimal" id="buyAmount" placeholder="0.00"></div>
+            <button class="btn-submit btn-buy" onclick="addCard()">Add to Collection</button>
+          </div>
+        </div>
+      `;
+    } else if (state.sellingCardId) {
+      const card = state.cards.find(x => x.id === state.sellingCardId);
+      modalHtml = `
+        <div class="modal-bg" onclick="if(event.target===this) closeSell()">
+          <div class="modal sell-form">
+            <div class="modal-top">
+              <div class="modal-title">🤝 Record Trade</div>
+              <button class="modal-close" onclick="closeSell()">✕</button>
+            </div>
+            <div class="selling-info">
+              <div class="selling-info-label">Trading away:</div>
+              <div class="selling-info-name">${esc(card.name)}</div>
+              <div class="selling-info-label">Caught for ${fmt(card.buyAmount)}</div>
+            </div>
+            <div class="form-row"><label>Date Traded</label><input type="date" id="sellDate" value="${today()}"></div>
+            <div class="form-row">
+              <label>Traded To (Buyer)</label>
+              <div class="buyer-wrap">
+                <input type="text" id="sellBuyer" placeholder="Who bought it?" autocomplete="off"
+                  oninput="onBuyerInput(this.value)" onfocus="focusBuyer()" onblur="hideSuggestions()">
+                <div id="suggestionsBox"></div>
+              </div>
+            </div>
+            <div class="form-row"><label>Trade Amount ($)</label><input type="number" step="0.01" inputmode="decimal" id="sellAmount" placeholder="0.00" oninput="onSellAmountInput(this.value)"></div>
+            <div id="sellPreview"></div>
+            <button class="btn-submit btn-sell-submit" onclick="sellCard()" style="margin-top:12px">Complete Trade</button>
+          </div>
+        </div>
+      `;
+    } else if (state.editingCash) {
+      modalHtml = `
+        <div class="modal-bg" onclick="if(event.target===this) closeCash()">
+          <div class="modal cash-form">
+            <div class="modal-top">
+              <div class="modal-title">💰 Set Starting Money</div>
+              <button class="modal-close" onclick="closeCash()">✕</button>
+            </div>
+            <div class="modal-note">How much money does your trainer start with? This is your wallet before buying any cards.</div>
+            <div class="form-row"><label>Starting Amount ($)</label><input type="number" step="0.01" inputmode="decimal" id="cashInput" value="${state.startingCash || ''}" placeholder="e.g. 95.00" autofocus></div>
+            <button class="btn-submit btn-cash" onclick="saveCash()">Save</button>
+          </div>
+        </div>
+      `;
+    }
+
+    document.getElementById('app').innerHTML = `
+      <div class="header">
+        <div class="header-decor">
+          <span class="pokeball"></span>
+          <h1>POKÉ TRADER</h1>
+          <span class="pokeball"></span>
+        </div>
+        <p>Gotta profit 'em all</p>
+      </div>
+
+      <div class="bank">
+        <div class="bank-top-section">
+          <div class="bank-top">
+            <div>
+              <div class="bank-label">💰 Trainer's Wallet</div>
+              <div class="bank-amount">${fmt(c.spendableCash)}</div>
+              <div class="bank-sub">Cash ready to catch more cards</div>
+            </div>
+            <button class="bank-btn" onclick="openCash()">Set Start $</button>
+          </div>
+        </div>
+        <div class="bank-bottom-section">
+          <div class="bank-grid">
+            <div class="bank-cell"><div class="bank-cell-label">Starting</div><div class="bank-cell-val">${fmt(state.startingCash)}</div></div>
+            <div class="bank-cell"><div class="bank-cell-label">+ Earned</div><div class="bank-cell-val">${fmt(c.totalProfit - c.totalSavings)}</div></div>
+            <div class="bank-cell"><div class="bank-cell-label">− In Cards</div><div class="bank-cell-val">${fmt(c.inventoryValue)}</div></div>
+          </div>
+          <div class="bank-total">
+            <span>🏆 Total Collection Value:</span>
+            <span>${fmt(c.totalWorth)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat stat-profit"><div class="stat-top">⚡ Total EXP</div><div class="stat-val">${fmt(c.totalProfit)}</div></div>
+        <div class="stat stat-save"><div class="stat-top">🏦 Bank (20%)</div><div class="stat-val">${fmt(c.totalSavings)}</div></div>
+        <div class="stat stat-fun"><div class="stat-top">🎮 Fun Fund (20%)</div><div class="stat-val">${fmt(c.totalFun)}</div></div>
+        <div class="stat stat-reinvest"><div class="stat-top">🔄 Power Up</div><div class="stat-val">${fmt(c.totalReinvest)}</div></div>
+      </div>
+
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="mini-stat-label">🎒 Collection</div><div class="mini-stat-val">${c.unsold.length} cards</div></div>
+        <div class="mini-stat"><div class="mini-stat-label">💸 Total Spent</div><div class="mini-stat-val">${fmt(c.totalSpent)}</div></div>
+        <div class="mini-stat"><div class="mini-stat-label">🤝 Traded</div><div class="mini-stat-val">${c.sold.length}</div></div>
+      </div>
+
+      <button class="btn-add" onclick="openBuy()"><span class="pokeball pokeball-sm"></span> Catch a New Card</button>
+
+      <div class="tabs">
+        <button class="tab ${state.activeTab === 'inventory' ? 'active' : ''}" onclick="setTab('inventory')">🎒 Collection (${c.unsold.length})</button>
+        <button class="tab ${state.activeTab === 'sold' ? 'active' : ''}" onclick="setTab('sold')">🤝 Traded (${c.sold.length})</button>
+      </div>
+
+      <div class="card-list">${listHtml}</div>
+
+      ${state.cards.length > 0 ? `<button class="reset" onclick="resetAll()">Reset all data</button>` : ''}
+
+      ${modalHtml}
+    `;
+  }
+
+  // Initial render
+  render();
+</script>
+</body>
+</html>
