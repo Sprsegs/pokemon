@@ -237,7 +237,7 @@
     card.savings = profit > 0 ? profit * 0.2 : 0;
     card.fun = profit > 0 ? profit * 0.2 : 0;
     // Reinvest = everything returned from sale EXCEPT the savings tax
-    // Includes original buy cost returned + fun money + remaining profit
+    // Fun money is DISPLAYED separately but is counted INSIDE reinvest
     card.reinvest = profit > 0 ? amount - card.savings : amount;
     saveData();
     state.sellingCardId = null;
@@ -360,8 +360,8 @@
     const splits = card.profit > 0 ? `
       <div class="split-grid">
         <div class="split-cell split-save"><div>🏦 Bank</div><div class="split-cell-val">${fmt(card.savings)}</div></div>
-        <div class="split-cell split-fun"><div>🎮 Fun</div><div class="split-cell-val">${fmt(card.fun)}</div></div>
         <div class="split-cell split-reinvest"><div>🔄 Power Up</div><div class="split-cell-val">${fmt(card.reinvest)}</div></div>
+        <div class="split-cell split-fun"><div>🎮 Fun*</div><div class="split-cell-val">${fmt(card.fun)}</div></div>
       </div>
     ` : '';
     return `
@@ -414,9 +414,10 @@
     const splits = profit > 0 ? `
       <div class="preview-splits">
         <div>🏦 Bank: <b>${fmt(profit*0.2)}</b></div>
-        <div>🎮 Fun: <b>${fmt(profit*0.2)}</b></div>
         <div>🔄 Power Up: <b>${fmt(amount - profit*0.2)}</b></div>
+        <div>🎮 Fun*: <b>${fmt(profit*0.2)}</b></div>
       </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;font-style:italic">* Fun money is inside Power Up — pull it out when you want</div>
     ` : '';
     box.innerHTML = `
       <div class="preview ${cls}">
